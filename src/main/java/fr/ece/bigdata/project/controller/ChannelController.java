@@ -86,11 +86,11 @@ public class ChannelController {
             return true;
         }
         catch (IOException io) {
-            System.err.println("Unable to channel user in table");
+            System.err.println("Unable to update channel in table");
             io.printStackTrace();
         }
         catch (Exception ex) {
-            System.err.println("Invalid channel & user");
+            System.err.println("Invalid channel");
         }
         return false;
     }
@@ -109,7 +109,7 @@ public class ChannelController {
             byte[] temp = result.getValue(Bytes.toBytes("channel"), Bytes.toBytes("label"));
             String label = Bytes.toString(temp);
 
-            temp = result.getValue(Bytes.toBytes("channel"), Bytes.toBytes("user"));
+            temp = result.getValue(Bytes.toBytes("channel"), Bytes.toBytes("author"));
             String user = Bytes.toString(temp);
 
             HashMap<String, Object> response = new HashMap<>();
