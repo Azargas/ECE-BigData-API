@@ -1,7 +1,7 @@
 # ECE-BigData-API
 API for BigData project.
 
-# How to use
+# Getting started
 1. Clone the repo
 2. Connect to VPN
 3. Generate a keytab from EDGE-1 and move into project root folder (same location as `krb5.conf`) and rename it "adaltas.keytab" (replace the old one)
