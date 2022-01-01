@@ -18,36 +18,49 @@ import java.util.function.Supplier;
 
 @Component
 public class HBaseConfig implements Supplier<Connection> {
-    private File krb5LocationF = new File("./krb5.conf");
+    private final File krb5LocationF = new File("./krb5.conf");
     @Value("classpath:conf/hbase-site.xml")
     private Resource hbaseSiteLocation;
     @Value("classpath:conf/core-site.xml")
     private Resource coreSiteLocation;
-    private File keytabLocationF = new File("./adaltas.keytab");
+    private final File keytabLocationF = new File("./adaltas.keytab");
     @Value("${conf.hbase.principal}")
     private String principal;
 
     private Connection connection;
 
     @PostConstruct
-    public void openHBaseConnection() throws IOException {
-        System.err.println(krb5LocationF.exists());
-        System.setProperty("java.security.krb5.conf", krb5LocationF.getCanonicalPath());
+    public void openHBaseConnection() {
+        if (!krb5LocationF.exists()) System.err.println("krb5.conf not found");
+        if (!keytabLocationF.exists()) System.err.println("adaltas.keytab not found");
+        if (principal.equals("")) System.err.println("Principal is empty, please replace it in application.properties");
+        try {
+            System.setProperty("java.security.krb5.conf", krb5LocationF.getCanonicalPath());
 
-        Configuration configuration = HBaseConfiguration.create();
-        configuration.addResource(hbaseSiteLocation.getURI().toURL());
-        configuration.addResource(coreSiteLocation.getURI().toURL());
+            Configuration configuration = HBaseConfiguration.create();
+            configuration.addResource(hbaseSiteLocation.getURI().toURL());
+            configuration.addResource(coreSiteLocation.getURI().toURL());
 
-        UserGroupInformation.setConfiguration(configuration);
-        UserGroupInformation.loginUserFromKeytab(principal, keytabLocationF.toURI().getPath());
-        connection = ConnectionFactory.createConnection(configuration);
-        HBaseAdmin.available(configuration);
+            UserGroupInformation.setConfiguration(configuration);
+            UserGroupInformation.loginUserFromKeytab(principal, keytabLocationF.toURI().getPath());
+            connection = ConnectionFactory.createConnection(configuration);
+            HBaseAdmin.available(configuration);
+        }
+        catch (IOException io) {
+            System.err.println("Unable to initialize HBase connection, please check files location and keytab validity");
+            io.printStackTrace();
+        }
     }
 
     @PreDestroy
-    public void closeHBaseConnection() throws IOException {
+    public void closeHBaseConnection() {
         if (connection != null) {
-            connection.close();
+            try {
+                connection.close();
+            } catch (IOException io) {
+                System.err.println("Unable to close HBase connection, it is open before closing ?");
+                io.printStackTrace();
+            }
         }
     }
 

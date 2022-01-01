@@ -20,11 +20,18 @@ public class AppController {
     }
 
     @GetMapping(value = "/test")
-    public String test() throws IOException {
-        Connection connection = hBaseConfig.get();
-        Admin admin = connection.getAdmin();
-        for (TableName t : admin.listTableNames())
-            System.err.println(t.getNameAsString());
-        return "Connection success";
+    public String test() {
+        try {
+            Connection connection = hBaseConfig.get();
+            Admin admin = connection.getAdmin();
+            for (TableName t : admin.listTableNames())
+                System.err.println(t.getNameAsString());
+            return "Connection success";
+        }
+        catch (IOException io) {
+            System.err.println("Unable to get user access");
+            io.printStackTrace();
+        }
+        return "Connection failed";
     }
 }
